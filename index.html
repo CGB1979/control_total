@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YMS - Sistema de Gestión de Patio de Alta Densidad</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- SheetJS: lectura de archivos Excel (.xlsx) directamente en el navegador -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
     <!-- ZONA LOGIN -->
@@ -47,16 +49,22 @@
 
             <div class="control-section buscador-section">
                 <label for="chasisBuscador">Buscador de Chasis (últimos 6-8 dígitos):</label>
-                <div class="buscador-container">
-                    <input type="text" id="chasisBuscador" placeholder="Ingrese últimos dígitos del chasis...">
+                <div class="buscador-container buscador-con-escaner">
+                    <input type="text" id="chasisBuscador" autocomplete="off" placeholder="Ingrese últimos dígitos del chasis...">
+                    <button type="button" id="btnEscanear" class="btn-scan" title="Escanear código">▣ Escanear</button>
                     <div id="sugerenciasChasis" class="sugerencias-dropdown"></div>
                 </div>
             </div>
 
             <div class="control-section">
-                <label for="fileInput">Cargar Inventario (Excel/JSON):</label>
-                <input type="file" id="fileInput" accept=".xlsx, .json">
-                <button id="btnCargar" class="btn-primary">Cargar</button>
+                <label for="fileInput">Cargar archivo:</label>
+                <select id="tipoCarga">
+                    <option value="base">Inventario base / mapa inicial</option>
+                    <option value="movimientos">Reubicaciones / movimientos</option>
+                </select>
+                <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.json">
+                <button id="btnCargar" class="btn-primary">Cargar archivo</button>
+                <small class="ayuda-carga">Base: Chasis, Marca, Modelo, Playa, Bloque, Carril, Posicion. Movimientos: Chasis y nueva posición (o solo Chasis para asignación automática).</small>
             </div>
 
             <button id="btnLogout" class="btn-logout">Cerrar Sesión</button>
@@ -115,6 +123,30 @@
             <span class="close">&times;</span>
             <h2>Detalles del Vehículo</h2>
             <div id="detallesVehiculo"></div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA ESCANEO CON CÁMARA -->
+    <div id="modalScanner" class="modal" style="display: none;">
+        <div class="modal-content scanner-modal">
+            <span class="close" id="closeScanner">&times;</span>
+            <h2>Escanear código</h2>
+            <p id="scannerStatus">Apunte la cámara al código de barras/QR.</p>
+            <video id="scannerVideo" autoplay playsinline muted></video>
+            <div class="scanner-actions">
+                <button type="button" id="btnDetenerScanner" class="btn-secondary">Detener cámara</button>
+            </div>
+            <p class="scanner-nota">También puede usar un lector físico: el sistema detecta automáticamente el código aunque el buscador no tenga foco.</p>
+        </div>
+    </div>
+
+    <!-- MODAL PARA CONFLICTOS DE REUBICACIÓN -->
+    <div id="modalConflictos" class="modal" style="display: none;">
+        <div class="modal-content conflictos-modal">
+            <span class="close" id="closeConflictos">&times;</span>
+            <h2>Reubicaciones pendientes</h2>
+            <p id="conflictosResumen"></p>
+            <div id="listaConflictos"></div>
         </div>
     </div>
 

@@ -29,6 +29,7 @@ function checkSession() {
     if (token) {
         document.getElementById('loginContainer').style.display = 'none';
         document.getElementById('mainContainer').style.display = 'flex';
+        initializeApp();
         return true;
     }
     return false;

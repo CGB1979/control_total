@@ -47,7 +47,7 @@ function renderizarBloqueEspecial(playa) {
 
 // Renderizar bloques comunes (espalda con espalda)
 function renderizarBloqueComun(playa, bloqueActivo) {
-    document.getElementById('bloqueReferenciaTitle').textContent = bloque encontr;
+    document.getElementById('bloqueReferenciaTitle').textContent = 'Bloque de referencia';
     document.getElementById('bloqueReferencia').style.display = 'flex';
     
     const configPlaya = CONFIG_PLAYAS_COMUNES.find(p => p.playa === playa);
@@ -82,7 +82,7 @@ function crearCeldaPosicion(bloqueKey, posKey, pos, esActivo) {
     celda.title = pos.chasis || 'Disponible';
 
     // Clic en celda libre con vehículo seleccionado
-    if (!pos.ocupada && esActivo && INVENTARIO.vehiculoSeleccionado && !INVENTARIO.vehiculoSeleccionado.posicionAsignada) {
+    if (!pos.ocupada && esActivo && INVENTARIO.vehiculoSeleccionado) {
         celda.addEventListener('click', function() {
             asignarVehiculoAPosicion(bloqueKey, posKey);
         });
@@ -108,19 +108,15 @@ function asignarVehiculoAPosicion(bloqueKey, posKey) {
         return;
     }
 
-    const partes = bloqueKey.split('_');
-    v.playa = partes[0];
-    v.bloque = partes[1];
-    v.carril = pos.carril;
-    v.posicion = pos.posicion;
-    v.posicionAsignada = true;
-
-    pos.ocupada = true;
-    pos.chasis = v.chasis;
+    const bloqueObj = INVENTARIO.bloques[bloqueKey];
+    if (!moverVehiculo(v, bloqueObj.playa, bloqueObj.bloque, pos.carril, pos.posicion)) {
+        alert('No se pudo mover el vehículo a esa posición.');
+        return;
+    }
 
     actualizarPanelVehiculo();
     renderizarLayout();
-    alert('¡Vehículo asignado exitosamente!');
+    alert('¡Vehículo asignado/reubicado exitosamente!');
 }
 
 // Actualizar estadísticas
