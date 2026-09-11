@@ -35,7 +35,10 @@ function actualizarPanelVehiculo() {
     document.getElementById("infoPosicion").textContent = v.posicionAsignada ? `${v.playa} · ${v.bloque} · C${v.carril}-P${v.posicion}` : "Sin asignar";
 
     const s = sugerirPosicion(v);
-    document.getElementById("infoDestino").textContent = s.mapeo ? `${s.mapeo.playaDestino} · ${s.mapeo.bloqueDestino}` : "Sin regla configurada";
+    const pendiente = INVENTARIO.posicionPendiente;
+    document.getElementById("infoDestino").textContent = pendiente
+        ? `${pendiente.playa} · ${pendiente.bloque}`
+        : (s.mapeo ? `${s.mapeo.playaDestino} · ${s.mapeo.bloqueDestino}` : "Sin regla configurada");
 
     const box = document.getElementById("sugerenciaAsignacion");
     const button = document.getElementById("btnAsignarSugerida");

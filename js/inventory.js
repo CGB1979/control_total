@@ -12,6 +12,7 @@ window.INVENTARIO = {
     playas: {},
     bloques: {},
     vehiculoSeleccionado: null,
+    posicionPendiente: null,
     modo: "nuevos"
 };
 

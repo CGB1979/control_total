@@ -36,3 +36,26 @@
 .carril-posiciones .celda-posicion {
     min-height: 58px;
 }
+
+/* ============================================================
+   VISOR COMPACTO DE CARRILES - 25 POR PAGINA
+   Los carriles son columnas contiguas; el encabezado es informativo.
+   Solo las posiciones de cada vehiculo son clickeables.
+   ============================================================ */
+.visor-carriles{display:block;overflow:hidden;padding:0;background:#f7f9fc;border-radius:12px}
+.carriles-tabla{display:grid;grid-template-columns:34px minmax(0,1fr) 34px;align-items:stretch;gap:4px;min-width:0}
+.carriles-pagina{display:grid;grid-template-columns:repeat(25,minmax(38px,1fr));min-width:0;overflow:hidden}
+.carril-columna{min-width:0;border-left:1px solid #d9e1ea;background:#fff}
+.carril-columna:last-child{border-right:1px solid #d9e1ea}
+.carril-label{height:30px;display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:8px;font-weight:800;color:#556278;background:#eef2f7;border-bottom:1px solid #d9e1ea;user-select:none}
+.carril-posiciones{display:flex;flex-direction:column;gap:2px;padding:2px}
+.carril-posiciones .celda-posicion{width:100%;min-width:0;min-height:42px;height:42px;border-radius:4px;padding:2px;box-shadow:none;transform:none}
+.carril-posiciones .celda-posicion:hover{transform:none;box-shadow:none}
+.carril-posiciones .celda-posicion strong{font-size:12px;line-height:1}
+.carril-posiciones .celda-posicion small{font-size:6px;line-height:1;margin-top:3px;white-space:nowrap;overflow:hidden;max-width:100%}
+.celda-bloqueada{background:#e3e7ed!important;border-color:#c5ccd6!important;color:#7c8796!important;cursor:not-allowed!important}
+.flecha-carriles{border:1px solid #d6dee8;background:#fff;color:#34445c;border-radius:8px;cursor:pointer;font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center;align-self:stretch;min-height:80px;transition:.15s}
+.flecha-carriles:hover:not(:disabled){background:#edf2f7}
+.flecha-carriles:disabled{opacity:.28;cursor:default}
+.paginador-carriles{display:flex;justify-content:space-between;padding:8px 38px 9px;font-size:9px;color:#7b8798;text-transform:uppercase;font-weight:750;letter-spacing:.03em}
+@media(max-width:900px){.carriles-pagina{grid-template-columns:repeat(25,minmax(32px,1fr))}.carril-posiciones .celda-posicion{min-height:38px;height:38px}.carril-label{font-size:7px}.carriles-tabla{grid-template-columns:30px minmax(0,1fr) 30px}}
