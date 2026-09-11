@@ -59,3 +59,156 @@
 .flecha-carriles:disabled{opacity:.28;cursor:default}
 .paginador-carriles{display:flex;justify-content:space-between;padding:8px 38px 9px;font-size:9px;color:#7b8798;text-transform:uppercase;font-weight:750;letter-spacing:.03em}
 @media(max-width:900px){.carriles-pagina{grid-template-columns:repeat(25,minmax(32px,1fr))}.carril-posiciones .celda-posicion{min-height:38px;height:38px}.carril-label{font-size:7px}.carriles-tabla{grid-template-columns:30px minmax(0,1fr) 30px}}
+
+/* ============================================================
+   VISOR ADAPTATIVO V3
+   - La cantidad visible se calcula segun el ancho real disponible.
+   - Flechas laterales avanzan exactamente una vista completa.
+   - El viewport tambien permite scroll horizontal manual.
+   - Los carriles quedan pegados entre si, sin espacios grandes.
+   ============================================================ */
+.visor-carriles {
+    display:block;
+    overflow:visible;
+    padding:0;
+    background:#f7f9fc;
+}
+.carriles-tabla {
+    display:grid;
+    grid-template-columns:32px minmax(0,1fr) 32px;
+    align-items:stretch;
+    gap:3px;
+    min-width:0;
+}
+.carriles-viewport {
+    min-width:0;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scrollbar-width:thin;
+    scrollbar-color:#b8c2d0 #edf1f5;
+    padding-bottom:3px;
+}
+.carriles-pagina {
+    display:grid;
+    min-width:100%;
+    width:100%;
+    gap:0;
+}
+.carril-columna {
+    min-width:0;
+    border-left:1px solid #d4dce6;
+    background:#fff;
+}
+.carril-columna:last-child {border-right:1px solid #d4dce6}
+.carril-label {
+    height:25px;
+    padding:0 2px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    font-size:7px;
+    font-weight:800;
+    color:#556278;
+    background:#eef2f7;
+    border-bottom:1px solid #d4dce6;
+    user-select:none;
+    pointer-events:none;
+}
+.carril-posiciones {
+    display:flex;
+    flex-direction:column;
+    gap:1px;
+    padding:1px;
+}
+.carril-posiciones .celda-posicion {
+    width:100%;
+    min-width:0;
+    height:34px;
+    min-height:34px;
+    border-radius:2px;
+    padding:0;
+    border-width:1px;
+    box-shadow:none;
+    transform:none;
+}
+.carril-posiciones .celda-posicion:hover {transform:none;box-shadow:none}
+.carril-posiciones .celda-posicion strong {font-size:10px;line-height:1}
+.carril-posiciones .celda-posicion small {display:none}
+.flecha-carriles {
+    width:32px;
+    min-height:69px;
+    align-self:stretch;
+    padding:0;
+    border:1px solid #d6dee8;
+    background:#fff;
+    color:#34445c;
+    border-radius:7px;
+    cursor:pointer;
+    font-size:17px;
+    font-weight:800;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:.15s;
+}
+.flecha-carriles:hover:not(:disabled) {background:#edf2f7}
+.flecha-carriles:disabled {opacity:.25;cursor:default}
+.paginador-carriles {
+    display:flex;
+    justify-content:space-between;
+    padding:6px 36px 5px;
+    font-size:9px;
+    color:#7b8798;
+    text-transform:uppercase;
+    font-weight:750;
+    letter-spacing:.03em;
+}
+.fuentes-mini {
+    width:100%;
+    margin-top:15px;
+    padding-top:13px;
+    border-top:1px solid #e6ebf1;
+}
+.fuentes-mini-heading {
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:10px;
+}
+.fuentes-mini-heading strong {font-size:13px}
+.fuentes-mini-heading span {font-size:10px;color:#8994a5}
+.import-box.compact {padding:11px;gap:10px}
+.import-box.compact .import-icon {width:30px;height:30px;border-radius:8px;font-size:9px}
+.import-box.compact h4 {font-size:12px}
+.import-box.compact p {font-size:10px;margin-bottom:7px}
+.import-box.compact input {padding:7px;font-size:10px;margin-bottom:6px}
+.import-box.compact .btn {padding:7px 10px;font-size:10px}
+.config-note {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:12px 20px;
+    align-items:center;
+}
+.config-copy p:not(.eyebrow) {font-size:11px;color:#718096;margin-top:5px}
+.config-actions {grid-column:2;grid-row:1}
+.fuentes-mini {grid-column:1 / -1}
+
+@media(max-width:600px) {
+    .carriles-tabla {grid-template-columns:26px minmax(0,1fr) 26px;gap:2px}
+    .flecha-carriles {width:26px;font-size:15px;min-height:61px}
+    .carril-label {height:23px;font-size:6px}
+    .carril-posiciones .celda-posicion {height:31px;min-height:31px}
+    .carril-posiciones .celda-posicion strong {font-size:9px}
+    .paginador-carriles {padding-left:28px;padding-right:28px}
+    .config-note {display:flex;flex-direction:column;align-items:stretch}
+    .config-actions {order:2}
+    .fuentes-mini {order:3}
+}
+
+/* Scroll continuo del visor: todos los carriles viven en una sola fila. */
+.carriles-viewport { width:100%; }
+.carriles-pagina.carriles-todos { min-width:max-content; width:max-content; }
+.carriles-pagina.carriles-todos .carril-columna { width:100%; }

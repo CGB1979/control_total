@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Control Total · Gestión de Patio</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=4">
 </head>
 <body>
   <div id="loginContainer" class="login-overlay">
@@ -53,15 +53,6 @@
       <button id="btnAsignarSugerida" class="btn btn-primary" style="display:none">Asignar posición sugerida</button>
     </section>
 
-    <section class="card imports-card">
-      <div class="section-heading"><div><p class="eyebrow">2 · ARCHIVOS</p><h3>Fuentes de información</h3></div><span class="hint">La estructura de playas ya está incorporada al sistema.</span></div>
-      <div class="import-grid">
-        <div class="import-box"><div class="import-icon">01</div><div><h4>Vehículos nuevos</h4><p>Planilla de Planta con VIN + Marca + Modelo. No tienen posición.</p><input id="fileNuevos" type="file" accept=".xlsx,.xls,.csv,.json"><button id="btnCargarNuevos" class="btn btn-secondary">Cargar vehículos nuevos</button></div></div>
-        <div class="import-box"><div class="import-icon">02</div><div><h4>Planilla del escáner</h4><p>Actualiza ocupadas/vacías y reubica vehículos según las posiciones marcadas.</p><input id="fileScanner" type="file" accept=".xlsx,.xls,.csv,.json"><button id="btnCargarScanner" class="btn btn-secondary">Procesar planilla del escáner</button></div></div>
-      </div>
-      <div id="conflictosScanner" class="conflictos-box"></div>
-    </section>
-
     <section class="card map-card">
       <div class="section-heading"><div><p class="eyebrow">3 · VISOR</p><h3>Mapa de posiciones</h3></div><div class="legend"><span><i class="libre"></i> Libre</span><span><i class="ocupado"></i> Ocupado</span></div></div>
       <div class="filters"><label>Playa<select id="playaSelect"><option value="">Seleccionar playa...</option></select></label><label>Bloque<select id="bloqueSelect"><option value="">Seleccionar bloque...</option></select></label></div>
@@ -70,7 +61,18 @@
       <div class="grid-posiciones" id="gridActivo"><div class="empty-state">Seleccioná una playa y un bloque para visualizar las posiciones.</div></div>
     </section>
 
-    <section class="config-note card"><div><p class="eyebrow">CONFIGURACIÓN</p><h3>Playas, bloques y carriles</h3><p>La capacidad física se administra en <code>data/config_playas.js</code>. Ahí podés cambiar carriles por playa o por bloque y bloquear carriles puntuales.</p></div><button id="btnResetInventario" class="btn btn-danger">Reiniciar inventario</button></section>
+    <section class="config-note card">
+      <div class="config-copy"><p class="eyebrow">CONFIGURACIÓN · 2 · ARCHIVOS</p><h3>Playas, bloques y fuentes</h3><p>La capacidad física se administra en <code>data/config_playas.js</code>. Los archivos son herramientas operativas y no forman parte del visor principal.</p></div>
+      <div class="config-actions"><button id="btnResetInventario" class="btn btn-danger">Reiniciar inventario</button></div>
+      <div class="fuentes-mini">
+        <div class="fuentes-mini-heading"><strong>Fuentes de información</strong><span>Importaciones operativas</span></div>
+        <div class="import-grid">
+          <div class="import-box compact"><div class="import-icon">01</div><div><h4>Vehículos nuevos</h4><p>Planilla de Planta con VIN + Marca + Modelo.</p><input id="fileNuevos" type="file" accept=".xlsx,.xls,.csv,.json"><button id="btnCargarNuevos" class="btn btn-secondary">Cargar</button></div></div>
+          <div class="import-box compact"><div class="import-icon">02</div><div><h4>Planilla del escáner</h4><p>Actualiza posiciones ocupadas, libres y reubicaciones.</p><input id="fileScanner" type="file" accept=".xlsx,.xls,.csv,.json"><button id="btnCargarScanner" class="btn btn-secondary">Procesar</button></div></div>
+        </div>
+        <div id="conflictosScanner" class="conflictos-box"></div>
+      </div>
+    </section>
   </main>
 
   <div id="modalDetalles" class="modal" style="display:none"><div class="modal-content"><button class="close">×</button><p class="eyebrow">DETALLE</p><h2>Vehículo</h2><div id="detallesVehiculo"></div></div></div>
@@ -80,12 +82,12 @@
   <!-- SheetJS: lector de XLSX/XLS en el navegador. Si la aplicación se instala offline,
        reemplazar este CDN por una copia local de xlsx.full.min.js. -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="data/config_playas.js"></script>
-  <script src="data/config_modelos_playas.js"></script>
-  <script src="js/login.js"></script>
-  <script src="js/inventory.js"></script>
-  <script src="js/layout.js"></script>
-  <script src="js/interaction.js"></script>
-  <script src="js/app.js"></script>
+  <script src="data/config_playas.js?v=4"></script>
+  <script src="data/config_modelos_playas.js?v=4"></script>
+  <script src="js/login.js?v=4"></script>
+  <script src="js/inventory.js?v=4"></script>
+  <script src="js/layout.js?v=4"></script>
+  <script src="js/interaction.js?v=4"></script>
+  <script src="js/app.js?v=4"></script>
 </body>
 </html>
