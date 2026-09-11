@@ -8,13 +8,20 @@ function actualizarSelectoresPlayas() {
     if (!playaSelect || !bloqueSelect) return;
 
     const playaAnterior = playaSelect.value;
+    const bloqueAnterior = bloqueSelect.value;
     playaSelect.innerHTML = '<option value="">Seleccionar playa...</option>' + PLAYAS_CONFIG.map(p => `<option value="${p.playa}">${p.playa}${p.tipo === "especial" ? " · Especial" : ""}</option>`).join("");
     if (PLAYAS_CONFIG.some(p => p.playa === playaAnterior)) playaSelect.value = playaAnterior;
 
     const actualizarBloques = () => {
         const p = obtenerConfigPlaya(playaSelect.value);
         bloqueSelect.innerHTML = '<option value="">Seleccionar bloque...</option>' + (p ? p.bloques.map(b => `<option value="${b.nombre}">${b.nombre}</option>`).join("") : "");
-        if (p && INVENTARIO.bloques[claveBloque(p.playa, "A")]) bloqueSelect.value = "A";
+        if (p && p.bloques.some(b => b.nombre === bloqueAnterior)) {
+            bloqueSelect.value = bloqueAnterior;
+        } else if (p && p.bloques.some(b => b.nombre === "A")) {
+            // Al elegir una playa, mostramos automáticamente el Bloque A.
+            // Así el visor queda listo para seleccionar una posición manualmente.
+            bloqueSelect.value = "A";
+        }
         renderizarLayout();
     };
 
@@ -40,12 +47,35 @@ function renderizarLayout() {
     if (!bloqueObj) return;
 
     document.getElementById("bloqueActivoTitle").textContent = `${playa} · Bloque ${bloque} · ${bloqueObj.tipo === "especial" ? "5 posiciones/carril" : "2 posiciones/carril"}`;
+    // Estos elementos de referencia existían en una versión anterior de la interfaz.
+    // No asumimos que estén presentes: el visor principal funciona sin ellos.
     const referencia = document.getElementById("bloqueReferencia");
-    referencia.style.display = "none";
-    document.getElementById("gridReferencia").replaceChildren();
+    if (referencia) referencia.style.display = "none";
+    const gridReferencia = document.getElementById("gridReferencia");
+    if (gridReferencia) gridReferencia.replaceChildren();
 
+    // Dibujamos el bloque agrupando las posiciones por carril.
+    // Esto hace visible la estructura física: 2 posiciones en playas comunes
+    // y 5 posiciones en playas especiales.
     grid.innerHTML = "";
-    Object.values(bloqueObj.posiciones).forEach(pos => grid.appendChild(crearCeldaPosicion(bloqueObj, pos)));
+    const carriles = {};
+    Object.values(bloqueObj.posiciones).forEach(pos => {
+        if (!carriles[pos.carril]) carriles[pos.carril] = [];
+        carriles[pos.carril].push(pos);
+    });
+
+    Object.keys(carriles).sort((a, b) => Number(a) - Number(b)).forEach(carril => {
+        const lane = document.createElement("div");
+        lane.className = "carril-visual";
+        lane.innerHTML = `<div class="carril-label">Carril ${carril}</div>`;
+        const slots = document.createElement("div");
+        slots.className = "carril-posiciones";
+        carriles[carril].sort((a, b) => a.posicion - b.posicion).forEach(pos => {
+            slots.appendChild(crearCeldaPosicion(bloqueObj, pos));
+        });
+        lane.appendChild(slots);
+        grid.appendChild(lane);
+    });
     actualizarEstadisticas(playa, bloque);
 }
 

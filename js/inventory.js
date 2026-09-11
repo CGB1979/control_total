@@ -272,8 +272,12 @@ function leerArchivoTabla(file, callback) {
             }
             if (typeof XLSX === "undefined") throw new Error("No se pudo cargar el lector Excel (SheetJS).");
             const wb = XLSX.read(e.target.result, { type: "array" });
+            if (!wb.SheetNames || !wb.SheetNames.length) throw new Error("El archivo Excel no contiene hojas.");
             const ws = wb.Sheets[wb.SheetNames[0]];
-            callback(null, XLSX.utils.sheet_to_json(ws, { defval: "" }));
+            if (!ws) throw new Error("No se pudo leer la primera hoja del Excel.");
+            const datos = XLSX.utils.sheet_to_json(ws, { defval: "", raw: false });
+            if (!Array.isArray(datos)) throw new Error("El contenido de la hoja no tiene un formato de tabla válido.");
+            callback(null, datos);
         } catch (err) { callback(err); }
     };
     if (file.name.toLowerCase().endsWith(".json")) reader.readAsText(file);
