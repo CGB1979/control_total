@@ -1,18 +1,98 @@
-# YMS - Control de Patio
+# Control Total - YMS
 
-## Importación de Excel
+## Objetivo
 
-La aplicación utiliza **SheetJS (`xlsx`)** en el navegador para leer `.xlsx`, `.xls` y `.csv`.
-No es necesario instalar Node ni `excel.js` para esta versión. La librería se carga desde jsDelivr en `index.html`.
+El sistema trabaja con dos fuentes de Excel y una estructura física configurada internamente:
 
-> Si el entorno donde se ejecuta la aplicación no tiene Internet, descargue una copia de `xlsx.full.min.js` y colóquela localmente; luego cambie el `<script src="...">` de `index.html` por la ruta local.
+1. **Vehículos nuevos**: Planta envía VIN/Chasis + Marca + Modelo. No tienen posición.
+2. **Planilla del escáner**: informa ubicaciones y permite actualizar/reubicar el inventario.
+3. **Configuración de patio**: playas, bloques, cantidad de carriles y carriles bloqueados. Está en `data/config_playas.js` y NO se carga desde Excel.
 
-### 1. Inventario base / mapa inicial
+## Flujo de operación
 
-Seleccionar `Inventario base / mapa inicial`.
+- Cargar una vez la planilla de Vehículos Nuevos.
+- Llegan los vehículos al control.
+- Escanear el VIN con lector USB/Bluetooth. El lector puede funcionar sin foco en el campo.
+- El sistema busca VIN + Marca + Modelo.
+- Si existe una regla en `data/config_modelos_playas.js`, sugiere Playa/Bloque.
+- Muestra la primera posición libre de ese destino.
+- El operador puede asignarla o hacer click sobre cualquier posición libre del visor para reemplazar la sugerencia y asignar manualmente.
+- Cuando se recibe una planilla del escáner, se procesa como actualización del estado físico. Si una posición indicada está ocupada, se informa el conflicto y se muestran alternativas libres del mismo bloque.
+
+## Configurar playas, bloques y capacidad
+
+Editar solamente `data/config_playas.js`.
+
+### Cambiar capacidad de una playa
+
+Cada playa tiene `carrilesPorDefecto: 100`.
+
+### Cambiar solamente un bloque
+
+Dentro del bloque se puede colocar, por ejemplo:
+
+```js
+{ nombre: "C", carriles: 75, carrilesBloqueados: [] }
+```
+
+### Bloquear carriles
+
+En una playa común, los carriles visibles son impares porque cada carril físico tiene dos posiciones:
+
+`1, 3, 5, 7, 9...`
+
+Ejemplo:
+
+```js
+carrilesBloqueados: [11, 23, 47]
+```
+
+En una playa especial se numeran normalmente:
+
+`1, 2, 3, 4, 5...`
+
+Ejemplo:
+
+```js
+carrilesBloqueados: [4, 8, 12]
+```
+
+Un carril bloqueado no genera posiciones disponibles.
+
+## Playas especiales
+
+Actualmente `I` y `J` están definidas como especiales.
+
+- Comunes: 2 posiciones por carril.
+- Especiales: 5 posiciones por carril.
+
+## Reglas Marca/Modelo
+
+Editar `data/config_modelos_playas.js`.
+
+Ejemplo:
+
+```js
+{ marca: "Toyota", modelo: "Hilux", playaDestino: "A", bloqueDestino: "A" }
+```
+
+## Excel aceptado
+
+El lector de Excel admite `.xlsx`, `.xls`, `.csv` y `.json`.
+
+### Vehículos nuevos
 
 Columnas recomendadas:
-- `Chasis`
+
+- `Numero de chasis` (también reconoce `Chasis` o `VIN`)
+- `Marca`
+- `Modelo`
+
+### Planilla del escáner
+
+Reconoce:
+
+- `Numero de chasis` / `Chasis` / `VIN`
 - `Marca`
 - `Modelo`
 - `Playa`
@@ -20,34 +100,14 @@ Columnas recomendadas:
 - `Carril`
 - `Posicion`
 
-El archivo base reemplaza el inventario actual y marca como ocupadas las posiciones indicadas.
+También tolera `Posición` con tilde.
 
-### 2. Reubicaciones / movimientos
+## Persistencia
 
-Seleccionar `Reubicaciones / movimientos`.
+Por ahora el estado se guarda en `localStorage` del navegador. Esto permite cerrar y volver a abrir la aplicación en la misma PC/navegador sin perder el inventario.
 
-Puede cargar filas con:
-- `Chasis` + `Playa` + `Bloque` + `Carril` + `Posicion`: mueve el vehículo a esa posición.
-- `Chasis` + `Marca` + `Modelo`: intenta ubicarlo automáticamente según `config_modelos_playas.js`.
-- También se aceptan columnas de destino como `NuevaPlaya`, `NuevoBloque`, `NuevoCarril`, `NuevaPosicion` o sus variantes.
+Para sincronizar varias PCs o conectar el escáner directamente a una base central, el siguiente paso es reemplazar esta persistencia local por una API/base de datos compartida.
 
-Si la posición solicitada está ocupada, el sistema **no pisa el vehículo existente**. Genera un conflicto y propone posiciones libres alternativas, priorizando el destino y luego otros bloques de la misma playa / el mapeo del modelo.
+## Excel.js / XLSX
 
-### 3. Escáner
-
-- **Lector físico USB/Bluetooth:** funciona como teclado. El sistema escucha el flujo de teclas globalmente y procesa el código al recibir `Enter`, aunque el buscador no tenga foco.
-- **Cámara:** el botón `▣ Escanear` intenta usar `BarcodeDetector` del navegador. Requiere permisos de cámara y normalmente HTTPS o localhost.
-
-### Formato sugerido de archivos
-
-**base.xlsx**
-| Chasis | Marca | Modelo | Playa | Bloque | Carril | Posicion |
-|---|---|---|---|---|---:|---:|
-| ABC123 | Toyota | Hilux | Playa A | A | 1 | 1 |
-
-**movimientos.xlsx**
-| Chasis | NuevaPlaya | NuevoBloque | NuevoCarril | NuevaPosicion |
-|---|---|---|---:|---:|
-| ABC123 | Playa A | B | 3 | 2 |
-
-El objetivo es que el archivo base sea el "estado maestro" y los archivos posteriores actualicen ese estado sin perder las posiciones ya cargadas.
+El proyecto usa SheetJS (`xlsx`) para leer Excel en el navegador. Actualmente se carga desde CDN en `index.html`. Si la instalación debe funcionar totalmente offline, guardar una copia local de `xlsx.full.min.js` y cambiar el `<script src=...>` por una ruta local.

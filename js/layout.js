@@ -1,181 +1,116 @@
-// ============================================
-// MÓDULO DE RENDERIZADO DE LAYOUT
-// ============================================
+// ============================================================
+// VISOR DE PLAYAS / BLOQUES / POSICIONES
+// ============================================================
+
+function actualizarSelectoresPlayas() {
+    const playaSelect = document.getElementById("playaSelect");
+    const bloqueSelect = document.getElementById("bloqueSelect");
+    if (!playaSelect || !bloqueSelect) return;
+
+    const playaAnterior = playaSelect.value;
+    playaSelect.innerHTML = '<option value="">Seleccionar playa...</option>' + PLAYAS_CONFIG.map(p => `<option value="${p.playa}">${p.playa}${p.tipo === "especial" ? " · Especial" : ""}</option>`).join("");
+    if (PLAYAS_CONFIG.some(p => p.playa === playaAnterior)) playaSelect.value = playaAnterior;
+
+    const actualizarBloques = () => {
+        const p = obtenerConfigPlaya(playaSelect.value);
+        bloqueSelect.innerHTML = '<option value="">Seleccionar bloque...</option>' + (p ? p.bloques.map(b => `<option value="${b.nombre}">${b.nombre}</option>`).join("") : "");
+        if (p && INVENTARIO.bloques[claveBloque(p.playa, "A")]) bloqueSelect.value = "A";
+        renderizarLayout();
+    };
+
+    playaSelect.onchange = actualizarBloques;
+    bloqueSelect.onchange = renderizarLayout;
+    actualizarBloques();
+}
 
 function renderizarLayout() {
-    const playaSelect = document.getElementById('playaSelect');
-    const bloqueSelect = document.getElementById('bloqueSelect');
-    
-    const playaActiva = playaSelect.value;
-    const bloqueActivo = bloqueSelect.value;
+    const playa = document.getElementById("playaSelect")?.value;
+    const bloque = document.getElementById("bloqueSelect")?.value;
+    const grid = document.getElementById("gridActivo");
+    if (!grid) return;
 
-    if (!playaActiva || !bloqueActivo) {
-        document.getElementById('gridActivo').innerHTML = '<p style="text-align: center; color: #999;">Seleccione una Playa y un Bloque</p>';
-        document.getElementById('gridReferencia').innerHTML = '';
+    if (!playa || !bloque) {
+        grid.innerHTML = '<div class="empty-state">Seleccioná una playa y un bloque para visualizar las posiciones.</div>';
+        document.getElementById("gridReferencia")?.replaceChildren();
+        actualizarEstadisticas(playa, bloque);
         return;
     }
 
-    // Actualizar estadísticas
-    actualizarEstadisticas(playaActiva, bloqueActivo);
+    const bloqueObj = INVENTARIO.bloques[claveBloque(playa, bloque)];
+    if (!bloqueObj) return;
 
-    // Determinar si es playa especial o común
-    if (esPlayaEspecial(playaActiva)) {
-        renderizarBloqueEspecial(playaActiva);
+    document.getElementById("bloqueActivoTitle").textContent = `${playa} · Bloque ${bloque} · ${bloqueObj.tipo === "especial" ? "5 posiciones/carril" : "2 posiciones/carril"}`;
+    const referencia = document.getElementById("bloqueReferencia");
+    referencia.style.display = "none";
+    document.getElementById("gridReferencia").replaceChildren();
+
+    grid.innerHTML = "";
+    Object.values(bloqueObj.posiciones).forEach(pos => grid.appendChild(crearCeldaPosicion(bloqueObj, pos)));
+    actualizarEstadisticas(playa, bloque);
+}
+
+function crearCeldaPosicion(bloque, pos) {
+    const celda = document.createElement("button");
+    celda.type = "button";
+    celda.className = `celda-posicion ${pos.ocupada ? "celda-ocupada" : "celda-libre"}`;
+    const v = pos.ocupada ? buscarVehiculo(pos.chasis) : null;
+    celda.innerHTML = `<strong>C${pos.carril}-P${pos.posicion}</strong>${v ? `<small>${v.chasis.slice(-6)}</small>` : "<small>LIBRE</small>"}`;
+    celda.title = pos.ocupada ? `${pos.chasis} · ${v?.marca || ""} ${v?.modelo || ""}` : "Disponible · click para asignar el vehículo seleccionado";
+
+    if (pos.ocupada) {
+        celda.onclick = () => mostrarDetallesVehiculo(pos.chasis);
     } else {
-        renderizarBloqueComun(playaActiva, bloqueActivo);
+        celda.onclick = () => {
+            const vSel = INVENTARIO.vehiculoSeleccionado;
+            if (!vSel) return mostrarToast("Primero escaneá o seleccioná un vehículo", "warning");
+            const r = asignarVehiculoAPosicion(vSel, bloque.playa, bloque.bloque, pos.carril, pos.posicion);
+            if (r.ok) {
+                actualizarPanelVehiculo();
+                renderizarLayout();
+                mostrarToast(`Asignado a ${bloque.playa}-${bloque.bloque} · C${pos.carril}-P${pos.posicion}`, "success");
+            } else mostrarToast(r.error, "error");
+        };
     }
-}
-
-// Renderizar bloque especial
-function renderizarBloqueEspecial(playa) {
-    const bloqueKey = playa;
-    const bloque = INVENTARIO.bloques[bloqueKey];
-    
-    document.getElementById('bloqueActivoTitle').textContent = `${playa} (Especial)`;
-    document.getElementById('bloqueReferenciaTitle').textContent = 'N/A';
-    document.getElementById('bloqueReferencia').style.display = 'none';
-
-    const grid = document.getElementById('gridActivo');
-    grid.innerHTML = '';
-
-    for (let posKey in bloque.posiciones) {
-        const pos = bloque.posiciones[posKey];
-        const celda = crearCeldaPosicion(bloqueKey, posKey, pos, true);
-        grid.appendChild(celda);
-    }
-}
-
-// Renderizar bloques comunes (espalda con espalda)
-function renderizarBloqueComun(playa, bloqueActivo) {
-    document.getElementById('bloqueReferenciaTitle').textContent = 'Bloque de referencia';
-    document.getElementById('bloqueReferencia').style.display = 'flex';
-    
-    const configPlaya = CONFIG_PLAYAS_COMUNES.find(p => p.playa === playa);
-    const otroBloque = configPlaya.bloques.find(b => b !== bloqueActivo);
-
-    // Bloque Activo
-    document.getElementById('bloqueActivoTitle').textContent = `${playa} - Bloque ${bloqueActivo} (Activo)`;
-    const bloqueKeyActivo = `${playa}_${bloqueActivo}`;
-    const bloqueKeyReferencia = `${playa}_${otroBloque}`;
-
-    renderizarGridBloque(bloqueKeyActivo, document.getElementById('gridActivo'), true);
-    renderizarGridBloque(bloqueKeyReferencia, document.getElementById('gridReferencia'), false);
-}
-
-// Renderizar grid de un bloque
-function renderizarGridBloque(bloqueKey, grid, esActivo) {
-    const bloque = INVENTARIO.bloques[bloqueKey];
-    grid.innerHTML = '';
-
-    for (let posKey in bloque.posiciones) {
-        const pos = bloque.posiciones[posKey];
-        const celda = crearCeldaPosicion(bloqueKey, posKey, pos, esActivo);
-        grid.appendChild(celda);
-    }
-}
-
-// Crear celda de posición
-function crearCeldaPosicion(bloqueKey, posKey, pos, esActivo) {
-    const celda = document.createElement('div');
-    celda.className = `celda-posicion ${pos.ocupada ? 'celda-ocupada' : 'celda-libre'}`;
-    celda.textContent = `C${pos.carril}-P${pos.posicion}`;
-    celda.title = pos.chasis || 'Disponible';
-
-    // Clic en celda libre con vehículo seleccionado
-    if (!pos.ocupada && esActivo && INVENTARIO.vehiculoSeleccionado) {
-        celda.addEventListener('click', function() {
-            asignarVehiculoAPosicion(bloqueKey, posKey);
-        });
-    }
-
-    // Clic en celda ocupada para ver detalles
-    if (pos.ocupada && esActivo) {
-        celda.addEventListener('click', function() {
-            mostrarDetallesVehiculo(pos.chasis);
-        });
-    }
-
     return celda;
 }
 
-// Asignar vehículo a posición específica
-function asignarVehiculoAPosicion(bloqueKey, posKey) {
-    const v = INVENTARIO.vehiculoSeleccionado;
-    const pos = INVENTARIO.bloques[bloqueKey].posiciones[posKey];
-
-    if (pos.ocupada) {
-        alert('Esta posición ya está ocupada');
-        return;
-    }
-
-    const bloqueObj = INVENTARIO.bloques[bloqueKey];
-    if (!moverVehiculo(v, bloqueObj.playa, bloqueObj.bloque, pos.carril, pos.posicion)) {
-        alert('No se pudo mover el vehículo a esa posición.');
-        return;
-    }
-
-    actualizarPanelVehiculo();
-    renderizarLayout();
-    alert('¡Vehículo asignado/reubicado exitosamente!');
-}
-
-// Actualizar estadísticas
 function actualizarEstadisticas(playa, bloque) {
-    let bloqueKey;
-    
-    if (esPlayaEspecial(playa)) {
-        bloqueKey = playa;
-    } else {
-        bloqueKey = `${playa}_${bloque}`;
-    }
-
-    const bloqueObj = INVENTARIO.bloques[bloqueKey];
-    let capacidad = 0;
-    let ocupadas = 0;
-
-    for (let posKey in bloqueObj.posiciones) {
-        capacidad++;
-        if (bloqueObj.posiciones[posKey].ocupada) {
-            ocupadas++;
-        }
-    }
-
-    const libres = capacidad - ocupadas;
-
-    document.getElementById('statCapacidad').textContent = capacidad;
-    document.getElementById('statLibres').textContent = libres;
-    document.getElementById('statOcupados').textContent = ocupadas;
+    const obj = playa && bloque ? INVENTARIO.bloques[claveBloque(playa, bloque)] : null;
+    const capacidad = obj ? Object.keys(obj.posiciones).length : 0;
+    const ocupados = obj ? Object.values(obj.posiciones).filter(p => p.ocupada).length : 0;
+    document.getElementById("statCapacidad").textContent = capacidad;
+    document.getElementById("statLibres").textContent = capacidad - ocupados;
+    document.getElementById("statOcupados").textContent = ocupados;
 }
 
-// Mostrar detalles del vehículo
+function actualizarResumenGeneral() {
+    const total = Object.keys(INVENTARIO.posiciones).length;
+    const ocupadas = Object.values(INVENTARIO.posiciones).filter(p => p.ocupada).length;
+    const rv = document.getElementById("resumenVehiculos");
+    const rl = document.getElementById("resumenLibres");
+    const ro = document.getElementById("resumenOcupadas");
+    if (rv) rv.textContent = INVENTARIO.vehiculos.length;
+    if (rl) rl.textContent = total - ocupadas;
+    if (ro) ro.textContent = ocupadas;
+}
+
 function mostrarDetallesVehiculo(chasis) {
-    const vehiculo = INVENTARIO.vehiculos.find(v => v.chasis === chasis);
-    if (!vehiculo) return;
-
-    const modal = document.getElementById('modalDetalles');
-    const detalles = document.getElementById('detallesVehiculo');
-
-    detalles.innerHTML = `
-        <p><strong>Chasis:</strong> ${vehiculo.chasis}</p>
-        <p><strong>Marca:</strong> ${vehiculo.marca}</p>
-        <p><strong>Modelo:</strong> ${vehiculo.modelo}</p>
-        <p><strong>Playa:</strong> ${vehiculo.playa}</p>
-        <p><strong>Bloque:</strong> ${vehiculo.bloque}</p>
-        <p><strong>Carril:</strong> ${vehiculo.carril}</p>
-        <p><strong>Posición:</strong> ${vehiculo.posicion}</p>
-    `;
-
-    modal.style.display = 'flex';
+    const v = buscarVehiculo(chasis);
+    if (!v) return;
+    INVENTARIO.vehiculoSeleccionado = v;
+    actualizarPanelVehiculo();
+    const modal = document.getElementById("modalDetalles");
+    document.getElementById("detallesVehiculo").innerHTML = `
+      <div class="detail-grid">
+        <div><span>VIN / Chasis</span><strong>${v.chasis}</strong></div>
+        <div><span>Marca</span><strong>${v.marca || "-"}</strong></div>
+        <div><span>Modelo</span><strong>${v.modelo || "-"}</strong></div>
+        <div><span>Ubicación</span><strong>${v.posicionAsignada ? `${v.playa} · ${v.bloque} · C${v.carril}-P${v.posicion}` : "Sin asignar"}</strong></div>
+      </div>`;
+    modal.style.display = "flex";
 }
 
-// Cerrar modal
-document.querySelector('.close').addEventListener('click', function() {
-    document.getElementById('modalDetalles').style.display = 'none';
-});
-
-window.addEventListener('click', function(event) {
-    const modal = document.getElementById('modalDetalles');
-    if (event.target === modal) {
-        modal.style.display = 'none';
-    }
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelector(".close")?.addEventListener("click", () => document.getElementById("modalDetalles").style.display = "none");
+    window.addEventListener("click", e => { if (e.target === document.getElementById("modalDetalles")) document.getElementById("modalDetalles").style.display = "none"; });
 });

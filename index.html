@@ -1,162 +1,91 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YMS - Sistema de Gestión de Patio de Alta Densidad</title>
-    <link rel="stylesheet" href="styles.css">
-    <!-- SheetJS: lectura de archivos Excel (.xlsx) directamente en el navegador -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control Total · Gestión de Patio</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- ZONA LOGIN -->
-    <div id="loginContainer" class="login-overlay">
-        <div class="login-modal">
-            <h1>Sistema YMS - Control de Patio</h1>
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="apellido">Apellido:</label>
-                    <input type="text" id="apellido" name="apellido" required>
-                </div>
-                <div class="form-group">
-                    <label for="dni">DNI:</label>
-                    <input type="text" id="dni" name="dni" required>
-                </div>
-                <button type="submit" class="btn-login">Ingresar</button>
-            </form>
-            <div id="loginError" class="error-message"></div>
-        </div>
+  <div id="loginContainer" class="login-overlay">
+    <div class="login-modal">
+      <div class="brand-mark">CT</div>
+      <p class="eyebrow">YMS · CONTROL DE PATIO</p>
+      <h1>Control Total</h1>
+      <p class="login-subtitle">Asignación y seguimiento de vehículos</p>
+      <form id="loginForm">
+        <label>Apellido<input type="text" id="apellido" required></label>
+        <label>DNI<input type="text" id="dni" required></label>
+        <button class="btn btn-primary btn-wide" type="submit">Ingresar</button>
+      </form>
+      <div id="loginError" class="error-message"></div>
     </div>
+  </div>
 
-    <!-- CONTENEDOR PRINCIPAL (OCULTO HASTA LOGIN) -->
-    <div id="mainContainer" class="main-container" style="display: none;">
-        
-        <!-- ZONA 1: PANEL DE CONTROL SUPERIOR -->
-        <div class="zona-1-control">
-            <div class="control-section">
-                <label for="playaSelect">Playa:</label>
-                <select id="playaSelect">
-                    <option value="">Seleccionar Playa...</option>
-                </select>
-            </div>
+  <main id="mainContainer" class="app-shell" style="display:none">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark small">CT</div><div><strong>Control Total</strong><span>Gestión inteligente de patio</span></div></div>
+      <div class="top-actions"><span class="status-dot">Sistema operativo</span><button id="btnLogout" class="btn btn-ghost">Cerrar sesión</button></div>
+    </header>
 
-            <div class="control-section">
-                <label for="bloqueSelect">Bloque:</label>
-                <select id="bloqueSelect">
-                    <option value="">Seleccionar Bloque...</option>
-                </select>
-            </div>
+    <section class="dashboard-head">
+      <div><p class="eyebrow">OPERACIÓN</p><h2>Asignación de vehículos</h2><p>Escaneá el VIN, verificá la sugerencia y confirmá la ubicación.</p></div>
+      <div class="summary-cards">
+        <div><span>Vehículos</span><strong id="resumenVehiculos">0</strong></div>
+        <div><span>Libres</span><strong id="resumenLibres">0</strong></div>
+        <div><span>Ocupadas</span><strong id="resumenOcupadas">0</strong></div>
+      </div>
+    </section>
 
-            <div class="control-section buscador-section">
-                <label for="chasisBuscador">Buscador de Chasis (últimos 6-8 dígitos):</label>
-                <div class="buscador-container buscador-con-escaner">
-                    <input type="text" id="chasisBuscador" autocomplete="off" placeholder="Ingrese últimos dígitos del chasis...">
-                    <button type="button" id="btnEscanear" class="btn-scan" title="Escanear código">▣ Escanear</button>
-                    <div id="sugerenciasChasis" class="sugerencias-dropdown"></div>
-                </div>
-            </div>
+    <section class="card operations-card">
+      <div class="section-heading"><div><p class="eyebrow">1 · INGRESO</p><h3>Vehículo en control</h3></div><span class="hint">El lector físico puede escanear sin enfocar ningún campo.</span></div>
+      <div class="scan-row">
+        <div class="search-wrap"><label for="chasisBuscador">VIN / Chasis</label><div class="input-with-button"><input id="chasisBuscador" autocomplete="off" placeholder="Escaneá o escribí el VIN..."><button id="btnEscanear" class="btn btn-secondary" type="button">▣ Escanear cámara</button></div><div id="sugerenciasChasis" class="sugerencias-dropdown"></div></div>
+      </div>
+      <div class="vehicle-panel">
+        <div><span>VIN / Chasis</span><strong id="infoChasis">Esperando escaneo...</strong></div>
+        <div><span>Marca</span><strong id="infoMarca">-</strong></div>
+        <div><span>Modelo</span><strong id="infoModelo">-</strong></div>
+        <div><span>Destino configurado</span><strong id="infoDestino">-</strong></div>
+        <div><span>Posición actual</span><strong id="infoPosicion">-</strong></div>
+      </div>
+      <div id="sugerenciaAsignacion" class="suggestion-box"></div>
+      <button id="btnAsignarSugerida" class="btn btn-primary" style="display:none">Asignar posición sugerida</button>
+    </section>
 
-            <div class="control-section">
-                <label for="fileInput">Cargar archivo:</label>
-                <select id="tipoCarga">
-                    <option value="base">Inventario base / mapa inicial</option>
-                    <option value="movimientos">Reubicaciones / movimientos</option>
-                </select>
-                <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.json">
-                <button id="btnCargar" class="btn-primary">Cargar archivo</button>
-                <small class="ayuda-carga">Base: Chasis, Marca, Modelo, Playa, Bloque, Carril, Posicion. Movimientos: Chasis y nueva posición (o solo Chasis para asignación automática).</small>
-            </div>
+    <section class="card imports-card">
+      <div class="section-heading"><div><p class="eyebrow">2 · ARCHIVOS</p><h3>Fuentes de información</h3></div><span class="hint">La estructura de playas ya está incorporada al sistema.</span></div>
+      <div class="import-grid">
+        <div class="import-box"><div class="import-icon">01</div><div><h4>Vehículos nuevos</h4><p>Planilla de Planta con VIN + Marca + Modelo. No tienen posición.</p><input id="fileNuevos" type="file" accept=".xlsx,.xls,.csv,.json"><button id="btnCargarNuevos" class="btn btn-secondary">Cargar vehículos nuevos</button></div></div>
+        <div class="import-box"><div class="import-icon">02</div><div><h4>Planilla del escáner</h4><p>Actualiza ocupadas/vacías y reubica vehículos según las posiciones marcadas.</p><input id="fileScanner" type="file" accept=".xlsx,.xls,.csv,.json"><button id="btnCargarScanner" class="btn btn-secondary">Procesar planilla del escáner</button></div></div>
+      </div>
+      <div id="conflictosScanner" class="conflictos-box"></div>
+    </section>
 
-            <button id="btnLogout" class="btn-logout">Cerrar Sesión</button>
-        </div>
+    <section class="card map-card">
+      <div class="section-heading"><div><p class="eyebrow">3 · VISOR</p><h3>Mapa de posiciones</h3></div><div class="legend"><span><i class="libre"></i> Libre</span><span><i class="ocupado"></i> Ocupado</span></div></div>
+      <div class="filters"><label>Playa<select id="playaSelect"><option value="">Seleccionar playa...</option></select></label><label>Bloque<select id="bloqueSelect"><option value="">Seleccionar bloque...</option></select></label></div>
+      <div class="stats-row"><div><span>Capacidad</span><strong id="statCapacidad">0</strong></div><div><span>Libres</span><strong id="statLibres">0</strong></div><div><span>Ocupados</span><strong id="statOcupados">0</strong></div></div>
+      <div class="map-title" id="bloqueActivoTitle">Seleccioná una ubicación</div>
+      <div class="grid-posiciones" id="gridActivo"><div class="empty-state">Seleccioná una playa y un bloque para visualizar las posiciones.</div></div>
+    </section>
 
-        <!-- ZONA 2: INFORMACIÓN DE UNIDAD DE ALTA -->
-        <div class="zona-2-info-unidad">
-            <div class="info-container">
-                <h3>Información del Vehículo Seleccionado</h3>
-                <div class="info-details">
-                    <p><strong>Chasis:</strong> <span id="infoChasis">-</span></p>
-                    <p><strong>Marca:</strong> <span id="infoMarca">-</span></p>
-                    <p><strong>Modelo:</strong> <span id="infoModelo">-</span></p>
-                    <p><strong>Posición Actual:</strong> <span id="infoPosicion">No asignada</span></p>
-                </div>
-                <div id="btnAsignarPosicion" class="btn-asignar-posicion" style="display: none;">
-                    Asignar Posición Automática
-                </div>
-            </div>
-        </div>
+    <section class="config-note card"><div><p class="eyebrow">CONFIGURACIÓN</p><h3>Playas, bloques y carriles</h3><p>La capacidad física se administra en <code>data/config_playas.js</code>. Ahí podés cambiar carriles por playa o por bloque y bloquear carriles puntuales.</p></div><button id="btnResetInventario" class="btn btn-danger">Reiniciar inventario</button></section>
+  </main>
 
-        <!-- ZONA 3: ESTADÍSTICAS DEL BLOQUE -->
-        <div class="zona-3-estadisticas">
-            <div class="stat-card">
-                <h4>Capacidad Total</h4>
-                <p class="stat-number" id="statCapacidad">0</p>
-            </div>
-            <div class="stat-card">
-                <h4>Lugares Libres</h4>
-                <p class="stat-number stat-libre" id="statLibres">0</p>
-            </div>
-            <div class="stat-card">
-                <h4>Lugares Ocupados</h4>
-                <p class="stat-number stat-ocupado" id="statOcupados">0</p>
-            </div>
-        </div>
+  <div id="modalDetalles" class="modal" style="display:none"><div class="modal-content"><button class="close">×</button><p class="eyebrow">DETALLE</p><h2>Vehículo</h2><div id="detallesVehiculo"></div></div></div>
+  <div id="scannerModal" class="modal" style="display:none"><div class="modal-content scanner-modal"><button class="close" onclick="cerrarScanner()">×</button><p class="eyebrow">LECTOR</p><h2>Escaneá el código</h2><video id="scannerVideo" playsinline></video><p class="hint">Apuntá la cámara al código VIN.</p></div></div>
+  <div id="toastRoot" class="toast-root"></div>
 
-        <!-- ZONA 4: MATRIZ DE RENDERIZADO VISUAL -->
-        <div class="zona-4-matriz">
-            <div class="matriz-container">
-                <div class="bloque-visual" id="bloqueActivo">
-                    <h3 id="bloqueActivoTitle">Bloque A (Activo)</h3>
-                    <div class="grid-posiciones" id="gridActivo"></div>
-                </div>
-                <div class="bloque-visual bloque-referencia" id="bloqueReferencia">
-                    <h3 id="bloqueReferenciaTitle">Bloque B (Referencia)</h3>
-                    <div class="grid-posiciones" id="gridReferencia"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL PARA DETALLES DE VEHÍCULO -->
-    <div id="modalDetalles" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Detalles del Vehículo</h2>
-            <div id="detallesVehiculo"></div>
-        </div>
-    </div>
-
-    <!-- MODAL PARA ESCANEO CON CÁMARA -->
-    <div id="modalScanner" class="modal" style="display: none;">
-        <div class="modal-content scanner-modal">
-            <span class="close" id="closeScanner">&times;</span>
-            <h2>Escanear código</h2>
-            <p id="scannerStatus">Apunte la cámara al código de barras/QR.</p>
-            <video id="scannerVideo" autoplay playsinline muted></video>
-            <div class="scanner-actions">
-                <button type="button" id="btnDetenerScanner" class="btn-secondary">Detener cámara</button>
-            </div>
-            <p class="scanner-nota">También puede usar un lector físico: el sistema detecta automáticamente el código aunque el buscador no tenga foco.</p>
-        </div>
-    </div>
-
-    <!-- MODAL PARA CONFLICTOS DE REUBICACIÓN -->
-    <div id="modalConflictos" class="modal" style="display: none;">
-        <div class="modal-content conflictos-modal">
-            <span class="close" id="closeConflictos">&times;</span>
-            <h2>Reubicaciones pendientes</h2>
-            <p id="conflictosResumen"></p>
-            <div id="listaConflictos"></div>
-        </div>
-    </div>
-
-    <!-- SCRIPTS -->
-    <script src="data/config_modelos_playas.js"></script>
-    <script src="data/config_especiales.js"></script>
-    <script src="js/login.js"></script>
-    <script src="js/inventory.js"></script>
-    <script src="js/layout.js"></script>
-    <script src="js/interaction.js"></script>
-    <script src="js/app.js"></script>
+  <!-- SheetJS: lector de XLSX/XLS en el navegador. Si la aplicación se instala offline,
+       reemplazar este CDN por una copia local de xlsx.full.min.js. -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="data/config_playas.js"></script>
+  <script src="data/config_modelos_playas.js"></script>
+  <script src="js/login.js"></script>
+  <script src="js/inventory.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/interaction.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
