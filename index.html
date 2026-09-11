@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YMS - Sistema de Gestión de Patio de Alta Densidad</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ZONA LOGIN -->
+    <div id="loginContainer" class="login-overlay">
+        <div class="login-modal">
+            <h1>Sistema YMS - Control de Patio</h1>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="apellido">Apellido:</label>
+                    <input type="text" id="apellido" name="apellido" required>
+                </div>
+                <div class="form-group">
+                    <label for="dni">DNI:</label>
+                    <input type="text" id="dni" name="dni" required>
+                </div>
+                <button type="submit" class="btn-login">Ingresar</button>
+            </form>
+            <div id="loginError" class="error-message"></div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL (OCULTO HASTA LOGIN) -->
+    <div id="mainContainer" class="main-container" style="display: none;">
+        
+        <!-- ZONA 1: PANEL DE CONTROL SUPERIOR -->
+        <div class="zona-1-control">
+            <div class="control-section">
+                <label for="playaSelect">Playa:</label>
+                <select id="playaSelect">
+                    <option value="">Seleccionar Playa...</option>
+                </select>
+            </div>
+
+            <div class="control-section">
+                <label for="bloqueSelect">Bloque:</label>
+                <select id="bloqueSelect">
+                    <option value="">Seleccionar Bloque...</option>
+                </select>
+            </div>
+
+            <div class="control-section buscador-section">
+                <label for="chasisBuscador">Buscador de Chasis (últimos 6-8 dígitos):</label>
+                <div class="buscador-container">
+                    <input type="text" id="chasisBuscador" placeholder="Ingrese últimos dígitos del chasis...">
+                    <div id="sugerenciasChasis" class="sugerencias-dropdown"></div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <label for="fileInput">Cargar Inventario (Excel/JSON):</label>
+                <input type="file" id="fileInput" accept=".xlsx, .json">
+                <button id="btnCargar" class="btn-primary">Cargar</button>
+            </div>
+
+            <button id="btnLogout" class="btn-logout">Cerrar Sesión</button>
+        </div>
+
+        <!-- ZONA 2: INFORMACIÓN DE UNIDAD DE ALTA -->
+        <div class="zona-2-info-unidad">
+            <div class="info-container">
+                <h3>Información del Vehículo Seleccionado</h3>
+                <div class="info-details">
+                    <p><strong>Chasis:</strong> <span id="infoChasis">-</span></p>
+                    <p><strong>Marca:</strong> <span id="infoMarca">-</span></p>
+                    <p><strong>Modelo:</strong> <span id="infoModelo">-</span></p>
+                    <p><strong>Posición Actual:</strong> <span id="infoPosicion">No asignada</span></p>
+                </div>
+                <div id="btnAsignarPosicion" class="btn-asignar-posicion" style="display: none;">
+                    Asignar Posición Automática
+                </div>
+            </div>
+        </div>
+
+        <!-- ZONA 3: ESTADÍSTICAS DEL BLOQUE -->
+        <div class="zona-3-estadisticas">
+            <div class="stat-card">
+                <h4>Capacidad Total</h4>
+                <p class="stat-number" id="statCapacidad">0</p>
+            </div>
+            <div class="stat-card">
+                <h4>Lugares Libres</h4>
+                <p class="stat-number stat-libre" id="statLibres">0</p>
+            </div>
+            <div class="stat-card">
+                <h4>Lugares Ocupados</h4>
+                <p class="stat-number stat-ocupado" id="statOcupados">0</p>
+            </div>
+        </div>
+
+        <!-- ZONA 4: MATRIZ DE RENDERIZADO VISUAL -->
+        <div class="zona-4-matriz">
+            <div class="matriz-container">
+                <div class="bloque-visual" id="bloqueActivo">
+                    <h3 id="bloqueActivoTitle">Bloque A (Activo)</h3>
+                    <div class="grid-posiciones" id="gridActivo"></div>
+                </div>
+                <div class="bloque-visual bloque-referencia" id="bloqueReferencia">
+                    <h3 id="bloqueReferenciaTitle">Bloque B (Referencia)</h3>
+                    <div class="grid-posiciones" id="gridReferencia"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA DETALLES DE VEHÍCULO -->
+    <div id="modalDetalles" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Detalles del Vehículo</h2>
+            <div id="detallesVehiculo"></div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="data/config_modelos_playas.js"></script>
+    <script src="data/config_especiales.js"></script>
+    <script src="js/login.js"></script>
+    <script src="js/inventory.js"></script>
+    <script src="js/layout.js"></script>
+    <script src="js/interaction.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
