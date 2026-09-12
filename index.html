@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Control Total · Gestión de Patio</title>
-  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=5">
 </head>
 <body>
   <div id="loginContainer" class="login-overlay">
@@ -55,8 +55,7 @@
 
     <section class="card map-card">
       <div class="section-heading"><div><p class="eyebrow">3 · VISOR</p><h3>Mapa de posiciones</h3></div><div class="legend"><span><i class="libre"></i> Libre</span><span><i class="ocupado"></i> Ocupado</span></div></div>
-      <div class="filters"><label>Playa<select id="playaSelect"><option value="">Seleccionar playa...</option></select></label><label>Bloque<select id="bloqueSelect"><option value="">Seleccionar bloque...</option></select></label></div>
-      <div class="stats-row"><div><span>Capacidad</span><strong id="statCapacidad">0</strong></div><div><span>Libres</span><strong id="statLibres">0</strong></div><div><span>Ocupados</span><strong id="statOcupados">0</strong></div></div>
+      <div class="map-controls"><div class="filters"><label>Playa<select id="playaSelect"><option value="">Seleccionar playa...</option></select></label><label>Bloque<select id="bloqueSelect"><option value="">Seleccionar bloque...</option></select></label></div><div class="stats-row"><div><span>Capacidad</span><strong id="statCapacidad">0</strong></div><div><span>Libres</span><strong id="statLibres">0</strong></div><div><span>Ocupados</span><strong id="statOcupados">0</strong></div></div></div>
       <div class="map-title" id="bloqueActivoTitle">Seleccioná una ubicación</div>
       <div class="grid-posiciones" id="gridActivo"><div class="empty-state">Seleccioná una playa y un bloque para visualizar las posiciones.</div></div>
     </section>
@@ -82,12 +81,12 @@
   <!-- SheetJS: lector de XLSX/XLS en el navegador. Si la aplicación se instala offline,
        reemplazar este CDN por una copia local de xlsx.full.min.js. -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="data/config_playas.js?v=4"></script>
-  <script src="data/config_modelos_playas.js?v=4"></script>
-  <script src="js/login.js?v=4"></script>
-  <script src="js/inventory.js?v=4"></script>
-  <script src="js/layout.js?v=4"></script>
-  <script src="js/interaction.js?v=4"></script>
-  <script src="js/app.js?v=4"></script>
+  <script src="data/config_playas.js?v=5"></script>
+  <script src="data/config_modelos_playas.js?v=5"></script>
+  <script src="js/login.js?v=5"></script>
+  <script src="js/inventory.js?v=5"></script>
+  <script src="js/layout.js?v=5"></script>
+  <script src="js/interaction.js?v=5"></script>
+  <script src="js/app.js?v=5"></script>
 </body>
 </html>
