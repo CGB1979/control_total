@@ -290,3 +290,11 @@
         gap:8px;
     }
 }
+
+/* ESCANER DE CAMARA: visor compacto con zona de lectura */
+.scanner-frame-wrap{position:relative;width:100%;max-width:560px;margin:8px auto 10px;aspect-ratio:16/9;background:#111827;border-radius:12px;overflow:hidden}
+.scanner-frame-wrap video{width:100%;height:100%;max-height:none;object-fit:cover;border-radius:0;margin:0;display:block}
+.scanner-frame{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.scanner-frame:before{content:"";width:min(78%,420px);height:min(48%,150px);border:2px solid #fff;border-radius:12px;box-shadow:0 0 0 9999px #11182738,0 0 20px #0008}
+.scanner-frame span{position:absolute;width:min(72%,390px);height:2px;background:#43d17d;box-shadow:0 0 8px #43d17d}
+@media(max-width:600px){.scanner-frame-wrap{aspect-ratio:4/3}.scanner-frame:before{width:82%;height:30%}}

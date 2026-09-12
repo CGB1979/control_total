@@ -75,7 +75,7 @@
   </main>
 
   <div id="modalDetalles" class="modal" style="display:none"><div class="modal-content"><button class="close">×</button><p class="eyebrow">DETALLE</p><h2>Vehículo</h2><div id="detallesVehiculo"></div></div></div>
-  <div id="scannerModal" class="modal" style="display:none"><div class="modal-content scanner-modal"><button class="close" onclick="cerrarScanner()">×</button><p class="eyebrow">LECTOR</p><h2>Escaneá el código</h2><video id="scannerVideo" playsinline></video><p class="hint">Apuntá la cámara al código VIN.</p></div></div>
+  <div id="scannerModal" class="modal" style="display:none"><div class="modal-content scanner-modal"><button class="close" onclick="cerrarScanner()">×</button><p class="eyebrow">LECTOR</p><h2>Escaneá el código</h2><div class="scanner-frame-wrap"><video id="scannerVideo" playsinline></video><div class="scanner-frame"><span></span></div></div><p class="hint">Apuntá el código de barras o QR dentro del recuadro.</p></div></div>
   <div id="toastRoot" class="toast-root"></div>
 
   <!-- SheetJS: lector de XLSX/XLS en el navegador. Si la aplicación se instala offline,
